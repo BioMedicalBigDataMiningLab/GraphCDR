@@ -1,13 +1,12 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, global_max_pool as gmp, SGConv
-from torch_geometric.nn import global_mean_pool
+from torch_geometric.nn import GCNConv, global_max_pool as gmp, SGConv, global_mean_pool
 from torch.nn import Parameter
 from my_utiils import *
 EPS = 1e-15
 class model_feature(nn.Module):
     def __init__(self, gcn_layer, dim_gexp, dim_methy, output, units_list=[256, 256, 256], use_relu=True, use_bn=True,
-                 use_GMP=True):
+                 use_GMP=True, use_mutation=True, use_gexpr=True, use_methylation=True):
         super(model_feature, self).__init__()
         torch.manual_seed(0)
         # -------drug_layer(4 layers)
@@ -15,6 +14,9 @@ class model_feature(nn.Module):
         self.use_bn = use_bn
         self.units_list = units_list
         self.use_GMP = use_GMP
+        self.use_mutation = use_mutation
+        self.use_gexpr = use_gexpr
+        self.use_methylation = use_methylation
         self.conv1 = SGConv(gcn_layer, units_list[0], add_self_loops=False)
         self.batch_conv1 = nn.BatchNorm1d(units_list[0])
         self.graph_conv = []
@@ -67,30 +69,39 @@ class model_feature(nn.Module):
             x_drug = gmp(x_drug, ibatch)
         else:
             x_drug = global_mean_pool(x_drug, ibatch)
-
         # -----mutation_train  #genomic mutation feature
-        x_mutation = torch.tanh(self.cov1(mutation_data))
-        x_mutation = F.max_pool2d(x_mutation, (1, 5))
-        x_mutation = F.relu(self.cov2(x_mutation))
-        x_mutation = F.max_pool2d(x_mutation, (1, 10))
-        x_mutation = self.fla_mut(x_mutation)
-        x_mutation = F.relu(self.fc_mut(x_mutation))
-        # x_mutation = torch.dropout(x_mutation, 0.1, train=False)
+        if self.use_mutation:
+            x_mutation = torch.tanh(self.cov1(mutation_data))
+            x_mutation = F.max_pool2d(x_mutation, (1, 5))
+            x_mutation = F.relu(self.cov2(x_mutation))
+            x_mutation = F.max_pool2d(x_mutation, (1, 10))
+            x_mutation = self.fla_mut(x_mutation)
+            x_mutation = F.relu(self.fc_mut(x_mutation))
+            # x_mutation = torch.dropout(x_mutation, 0.1, train=False)
 
         # ----gexpr_train #gexp feature
-        x_gexpr = torch.tanh(self.fc_gexp1(gexpr_data))
-        x_gexpr = self.batch_gexp1(x_gexpr)
-        # x_gexpr = torch.dropout(x_gexpr,0.1, train=False)
-        x_gexpr = F.relu(self.fc_gexp2(x_gexpr))
+        if self.use_gexpr:
+            x_gexpr = torch.tanh(self.fc_gexp1(gexpr_data))
+            x_gexpr = self.batch_gexp1(x_gexpr)
+            # x_gexpr = torch.dropout(x_gexpr,0.1, train=False)
+            x_gexpr = F.relu(self.fc_gexp2(x_gexpr))
 
         # ----methylation_train
-        x_methylation = torch.tanh(self.fc_methy1(methylation_data))
-        x_methylation = self.batch_methy1(x_methylation)
-        # x_methylation = torch.dropout(x_methylation, 0.1, train=False)
-        x_methylation = F.relu(self.fc_methy2(x_methylation))
+        if self.use_methylation:
+            x_methylation = torch.tanh(self.fc_methy1(methylation_data))
+            x_methylation = self.batch_methy1(x_methylation)
+            # x_methylation = torch.dropout(x_methylation, 0.1, train=False)
+            x_methylation = F.relu(self.fc_methy2(x_methylation))
 
         # ------Concatenate
-        x_cell = torch.cat((x_mutation, x_gexpr, x_methylation), 1)
+        if self.use_gexpr==False:
+            x_cell = torch.cat((x_mutation, x_methylation), 1)
+        elif self.use_mutation==False:
+            x_cell = torch.cat((x_gexpr, x_methylation), 1)
+        elif self.use_methylation == False:
+            x_cell = torch.cat((x_mutation, x_gexpr), 1)
+        else:
+            x_cell = torch.cat((x_mutation, x_gexpr, x_methylation), 1)
         x_cell = F.relu(self.fcat(x_cell))
         x_all = torch.cat((x_cell, x_drug), 0)
         x_all = self.batchc(x_all)
@@ -101,10 +112,13 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.conv1 = GCNConv(in_channels, hidden_channels, cached=True)
         self.prelu1 = nn.PReLU(hidden_channels)
-
+        # self.conv2 = GCNConv(hidden_channels, hidden_channels, cached=True)
+        # self.prelu2 = nn.PReLU(hidden_channels)
     def forward(self, x, edge_index):
         x = self.conv1(x, edge_index)
         x = self.prelu1(x)
+        # x = self.conv2(x, edge_index)
+        # x = self.prelu2(x)
         return x
 
 class Summary(nn.Module):
