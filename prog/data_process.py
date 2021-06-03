@@ -6,13 +6,17 @@ from graphset import *
 from scipy.sparse import coo_matrix
 
 def CalculateGraphFeat(feat_mat,adj_list):
+    use_molecular_graph = True
     assert feat_mat.shape[0] == len(adj_list)
     adj_mat = np.zeros((len(adj_list), len(adj_list)), dtype='float32')
-    for i in range(len(adj_list)):
-        nodes = adj_list[i]
-        for each in nodes:
-            adj_mat[i,int(each)] = 1
-    assert np.allclose(adj_mat,adj_mat.T)
+    if use_molecular_graph==True:
+        for i in range(len(adj_list)):
+            nodes = adj_list[i]
+            for each in nodes:
+                adj_mat[i,int(each)] = 1
+        assert np.allclose(adj_mat,adj_mat.T)
+    else:
+        adj_mat = adj_mat + np.eye(len(adj_list))
     x, y = np.where(adj_mat == 1)
     adj_index = np.array(np.vstack((x, y)))
     return [feat_mat,adj_index]
