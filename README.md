@@ -1,2 +1,2 @@
 # GraphCDR
-GraphCDR: Contrastive learning graph neural network for cancer drug response prediction
+GraphCDR: Contrastive graph neural network for cancer drug response prediction
