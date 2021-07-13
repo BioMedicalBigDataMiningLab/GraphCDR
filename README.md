@@ -8,6 +8,7 @@ Source code for "GraphCDR: Contrastive graph neural network for cancer drug resp
 * hickle >= 2.1.0
 
 # Usage
-python train_script.py \<parameters\>
+python graphCDR.py \<parameters\>
   
 # Predicted missing data
+As GDSC database only measured IC50 of part cell line and drug paires. We applied GraphCDR to predicted the missing IC50 values. The predicted results can be find at data/Missing_pairs.txt. 
