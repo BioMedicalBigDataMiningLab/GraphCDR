@@ -4,7 +4,7 @@ Source code for "GraphCDR: Contrastive graph neural network for cancer drug resp
 ![Framework of GraphCDR](https://github.com/liuxuan666/GraphCDR/blob/main/Framework.png)  
 
 # Requirements
-* Python >= 3.7
+* Python >= 3.6
 * PyTorch >= 1.4
 * PyTorch Geometry >= 1.6
 * hickle >= 3.4
