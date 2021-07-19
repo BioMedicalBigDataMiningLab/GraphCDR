@@ -15,14 +15,14 @@ parser.add_argument('--output_channels', dest='output_channels', type=int, defau
 args = parser.parse_args()
 start_time = time.time()
 #------files
-Drug_info_file='data/Drug/1.Drug_listMon Jun 24 09_00_55 2019.csv'
-IC50_threds_file='data/Drug/drug_threshold.csv'
-Drug_feature_file='data/Drug/drug_graph_feat'
-Cell_line_info_file='data/Celline/Cell_lines_annotations.txt'
-Genomic_mutation_file='data/Celline/genomic_mutation_34673_demap_features.csv'
-Cancer_response_exp_file='data/Celline/GDSC_IC50.csv'
-Gene_expression_file='data/Celline/genomic_expression_561celllines_697genes_demap_features.csv'
-Methylation_file='data/Celline/genomic_methylation_561celllines_808genes_demap_features.csv'
+Drug_info_file='../data/Drug/1.Drug_listMon Jun 24 09_00_55 2019.csv'
+IC50_threds_file='../data/Drug/drug_threshold.csv'
+Drug_feature_file='../data/Drug/drug_graph_feat'
+Cell_line_info_file='../data/Celline/Cell_lines_annotations.txt'
+Genomic_mutation_file='../data/Celline/genomic_mutation_34673_demap_features.csv'
+Cancer_response_exp_file='../data/Celline/GDSC_IC50.csv'
+Gene_expression_file='../data/Celline/genomic_expression_561celllines_697genes_demap_features.csv'
+Methylation_file='../data/Celline/genomic_methylation_561celllines_808genes_demap_features.csv'
 
 drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_move, nb_celllines, nb_drugs=dataload(Drug_info_file, IC50_threds_file, Drug_feature_file, Cell_line_info_file, Genomic_mutation_file,
              Cancer_response_exp_file, Gene_expression_file, Methylation_file)
