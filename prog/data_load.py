@@ -9,7 +9,6 @@ def dataload(Drug_info_file, IC50_threds_file, Drug_feature_file, Cell_line_info
     reader = csv.reader(open(Drug_info_file,'r'))
     rows = [item for item in reader]
     drugid2pubchemid = {item[0]:item[5] for item in rows if item[5].isdigit()}
-    ###IC50_threds_file = '/home/lx/PycharmProjects/DeepCDR-master/data/drug_222.csv'
     IC50threds = pd.read_csv(IC50_threds_file, sep=',',header=0)
     drug2dict  = dict(zip(IC50threds['pubchem'],IC50threds['IC50']))
     IC50key=[]; IC50value=[]
@@ -57,9 +56,10 @@ def dataload(Drug_info_file, IC50_threds_file, Drug_feature_file, Cell_line_info
                     else:
                         binary_IC50 = 1 if ln_IC50 < -2 else -1
                         data_idx.append((each_cellline,pubchem_id,binary_IC50,cellline2cancertype[each_cellline]))
+  #----eliminate ambiguity---------#
     data_sort=sorted(data_idx, key=(lambda x: [x[0], x[1], x[2]]), reverse=True)
     data_back=[];data_move=[]
-    data_idx1 = [[i[0],i[1]] for i in data_sort]
+    data_idx1 = [[item[0],item[1]] for item in data_sort]
     for i,k in zip(data_idx1,data_sort):
         if i not in data_back:
             data_back.append(i)
