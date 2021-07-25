@@ -16,7 +16,8 @@ args = parser.parse_args()
 start_time = time.time()
 #------files
 Drug_info_file='../data/Drug/1.Drug_listMon Jun 24 09_00_55 2019.csv'
-IC50_threds_file='../data/Drug/drug_threshold.csv'
+IC50_threds_file='../data/Drug/drug_threshold.txt'
+#IC50_threds_file='../data/Drug/drug_threshold.csv'
 Drug_feature_file='../data/Drug/drug_graph_feat'
 Cell_line_info_file='../data/Celline/Cell_lines_annotations.txt'
 Genomic_mutation_file='../data/Celline/genomic_mutation_34673_demap_features.csv'
