@@ -1,5 +1,5 @@
 # GraphCDR
-Source code for "GraphCDR: Contrastive graph neural network for cancer drug response prediction"
+Source code and data for "GraphCDR: Contrastive graph neural network for cancer drug response prediction"
 
 ![Framework of GraphCDR](https://github.com/liuxuan666/GraphCDR/blob/main/Framework.png)  
 
