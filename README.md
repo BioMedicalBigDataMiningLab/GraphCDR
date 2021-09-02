@@ -8,6 +8,8 @@ Source code and data for "GraphCDR: Contrastive graph neural network for cancer 
 * PyTorch >= 1.4
 * PyTorch Geometry >= 1.6
 * hickle >= 3.4
+* DeepChem >= 1.1111
+* Rdkit >= 1.1111
 
 # Usage
 python graphCDR.py \<parameters\>
