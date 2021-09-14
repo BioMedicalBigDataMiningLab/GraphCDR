@@ -4,10 +4,10 @@ from torch_geometric.nn import GCNConv, global_max_pool as gmp, SGConv, global_m
 from torch.nn import Parameter
 from my_utiils import *
 EPS = 1e-15
-class model_feature(nn.Module):
+class NodeAttribute(nn.Module):
     def __init__(self, gcn_layer, dim_gexp, dim_methy, output, units_list=[256, 256, 256], use_relu=True, use_bn=True,
                  use_GMP=True, use_mutation=True, use_gexpr=True, use_methylation=True):
-        super(model_feature, self).__init__()
+        super(NodeAttribute, self).__init__()
         torch.manual_seed(0)
         # -------drug_layer(4 layers)
         self.use_relu = use_relu
