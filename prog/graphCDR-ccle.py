@@ -58,8 +58,8 @@ print('%d instances across %d cell lines and %d drugs were generated.'%(len(data
 
 drug_set,cellline_set,train_edge,label_pos,train_mask,test_mask,atom_shape = process(drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_move, nb_celllines, nb_drugs)
 
-model = DeepGraphInfomax(hidden_channels=args.hidden_channels, encoder=Encoder(args.output_channels, args.hidden_channels), summary=Summary(args.output_channels, args.hidden_channels),
-                 feat=model_feature(atom_shape,gexpr_feature.shape[-1],methylation_feature.shape[-1],args.output_channels),index=nb_celllines)
+model = GraphCDR(hidden_channels=args.hidden_channels, encoder=Encoder(args.output_channels, args.hidden_channels), summary=Summary(args.output_channels, args.hidden_channels),
+                 feat=NodeAttribute(atom_shape,gexpr_feature.shape[-1],methylation_feature.shape[-1],args.output_channels),index=nb_celllines)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 myloss = nn.BCELoss()
 
