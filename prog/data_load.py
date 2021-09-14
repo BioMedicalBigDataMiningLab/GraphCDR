@@ -61,7 +61,7 @@ def dataload(Drug_info_file, IC50_threds_file, Drug_feature_file, Cell_line_info
                     else:
                         binary_IC50 = 1 if ln_IC50 < -2 else -1
                         data_idx.append((each_cellline,pubchem_id,binary_IC50,cellline2cancertype[each_cellline]))
-    #----eliminate ambiguity
+    #----eliminate ambiguity responses
     data_sort=sorted(data_idx, key=(lambda x: [x[0], x[1], x[2]]), reverse=True)
     data_tmp=[];data_new=[]
     data_idx1 = [[i[0],i[1]] for i in data_sort]
