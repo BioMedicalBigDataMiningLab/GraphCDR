@@ -4,12 +4,12 @@ from torch_geometric.nn import GCNConv, global_max_pool as gmp, SGConv, global_m
 from torch.nn import Parameter
 from my_utiils import *
 EPS = 1e-15
-class NodeAttribute(nn.Module):
+class NodeRepresentation(nn.Module):
     def __init__(self, gcn_layer, dim_gexp, dim_methy, output, units_list=[256, 256, 256], use_relu=True, use_bn=True,
                  use_GMP=True, use_mutation=True, use_gexpr=True, use_methylation=True):
-        super(NodeAttribute, self).__init__()
+        super(NodeRepresentation, self).__init__()
         torch.manual_seed(0)
-        # -------drug_layer(4 layers)
+        # -------drug layers
         self.use_relu = use_relu
         self.use_bn = use_bn
         self.units_list = units_list
@@ -26,6 +26,7 @@ class NodeAttribute(nn.Module):
             self.graph_bn.append(nn.BatchNorm1d((units_list[i + 1])))
         self.conv_end = SGConv(units_list[-1], output, add_self_loops=False)
         self.batch_end = nn.BatchNorm1d(output)
+        # --------cell line layers (three omics)
         # -------gexp_layer
         self.fc_gexp1 = nn.Linear(dim_gexp, 256)
         self.batch_gexp1 = nn.BatchNorm1d(256)
@@ -39,10 +40,9 @@ class NodeAttribute(nn.Module):
         self.cov2 = nn.Conv2d(50, 30, (1, 5), stride=(1, 2))
         self.fla_mut = nn.Flatten()
         self.fc_mut = nn.Linear(2010, output)
-        # ------Concatenate_celline
+        # ------Concatenate_three omics
         self.fcat = nn.Linear(300, output)
         self.batchc = nn.BatchNorm1d(100)
-        # self.prelu = nn.PReLU(output)
         self.reset_para()
 
     def reset_para(self):
@@ -54,7 +54,7 @@ class NodeAttribute(nn.Module):
         return
 
     def forward(self, drug_feature, drug_adj, ibatch, mutation_data, gexpr_data, methylation_data):
-        # -----drug_train
+        # -----drug representation
         x_drug = self.conv1(drug_feature, drug_adj)
         x_drug = F.relu(x_drug)
         x_drug = self.batch_conv1(x_drug)
@@ -69,7 +69,9 @@ class NodeAttribute(nn.Module):
             x_drug = gmp(x_drug, ibatch)
         else:
             x_drug = global_mean_pool(x_drug, ibatch)
-        # -----mutation_train  #genomic mutation feature
+            
+        # -----cell line representation
+        # -----mutation representation
         if self.use_mutation:
             x_mutation = torch.tanh(self.cov1(mutation_data))
             x_mutation = F.max_pool2d(x_mutation, (1, 5))
@@ -79,21 +81,21 @@ class NodeAttribute(nn.Module):
             x_mutation = F.relu(self.fc_mut(x_mutation))
             # x_mutation = torch.dropout(x_mutation, 0.1, train=False)
 
-        # ----gexpr_train #gexp feature
+        # ----gexpr representation
         if self.use_gexpr:
             x_gexpr = torch.tanh(self.fc_gexp1(gexpr_data))
             x_gexpr = self.batch_gexp1(x_gexpr)
             # x_gexpr = torch.dropout(x_gexpr,0.1, train=False)
             x_gexpr = F.relu(self.fc_gexp2(x_gexpr))
 
-        # ----methylation_train
+        # ----methylation representation
         if self.use_methylation:
             x_methylation = torch.tanh(self.fc_methy1(methylation_data))
             x_methylation = self.batch_methy1(x_methylation)
             # x_methylation = torch.dropout(x_methylation, 0.1, train=False)
             x_methylation = F.relu(self.fc_methy2(x_methylation))
 
-        # ------Concatenate
+        # ------Concatenate representations of three omics
         if self.use_gexpr==False:
             x_cell = torch.cat((x_mutation, x_methylation), 1)
         elif self.use_mutation==False:
@@ -103,6 +105,8 @@ class NodeAttribute(nn.Module):
         else:
             x_cell = torch.cat((x_mutation, x_gexpr, x_methylation), 1)
         x_cell = F.relu(self.fcat(x_cell))
+        
+        #combine representations of cell line and drug
         x_all = torch.cat((x_cell, x_drug), 0)
         x_all = self.batchc(x_all)
         return x_all
@@ -159,18 +163,26 @@ class DeepGraphInfomax(nn.Module):
                     nn.init.zeros_(m.bias)
 
     def forward(self, drug_feature, drug_adj, ibatch, mutation_data, gexpr_data, methylation_data, edge):
+        #---CDR_graph_edge and corrupted CDR_graph_edge
         pos_edge = torch.from_numpy(edge[edge[:, 2] == 1, 0:2].T)
         neg_edge = torch.from_numpy(edge[edge[:, 2] == -1, 0:2].T)
+        #---cell+drug node attributes
         feature = self.feat(drug_feature, drug_adj, ibatch, mutation_data, gexpr_data, methylation_data)
+        #---cell+drug embedding from the CDR graph and the corrupted CDR graph
         pos_z = self.encoder(feature, pos_edge)
         neg_z = self.encoder(feature, neg_edge)
+        #---graph-level embedding (summary)
         summary_pos = self.summary(feature, pos_z)
         summary_neg = self.summary(feature, neg_z)
+        #---embedding at layer l
         cellpos = pos_z[:self.index, ]; drugpos = pos_z[self.index:, ]
+        #---embedding at layer 0
         cellfea = self.fc(feature[:self.index, ]); drugfea = self.fd(feature[self.index:, ])
         cellfea = torch.sigmoid(cellfea); drugfea = torch.sigmoid(drugfea)
+        #---concatenate embeddings at different layers (0 and l)
         cellpos = torch.cat((cellpos, cellfea), 1)
         drugpos = torch.cat((drugpos, drugfea), 1)
+        #---inner product
         pos_adj = torch.matmul(cellpos, drugpos.t())
         pos_adj = self.act(pos_adj)
         return pos_z, neg_z, summary_pos, summary_neg, pos_adj.view(-1)
