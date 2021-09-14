@@ -13,7 +13,7 @@ class SGConv(MessagePassing):
     _cached_x: Optional[Tensor]
 
     def __init__(self, in_channels: int, out_channels: int, K: int = 1,
-                 cached: bool = False, add_self_loops: bool = True,
+                 cached: bool = False, add_self_loops: bool = False,
                  bias: bool = True, **kwargs):
         kwargs.setdefault('aggr', 'add')
         super(SGConv, self).__init__(**kwargs)
