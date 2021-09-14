@@ -18,7 +18,7 @@ parser.add_argument('--hidden_channels', dest='hidden_channels', type=int, defau
 parser.add_argument('--output_channels', dest='output_channels', type=int, default=100, help='')
 args = parser.parse_args()
 start_time = time.time()
-#--------cellline_feature_input
+#--------cell line feature input
 Genomic_mutation_file = '../data/Celline/genomic_mutation_34673_demap_features.csv'
 Gene_expression_file = '../data/Celline/genomic_expression_561celllines_697genes_demap_features.csv'
 Methylation_file = '../data/Celline/genomic_methylation_561celllines_808genes_demap_features.csv'
@@ -27,7 +27,8 @@ mutation_feature = pd.read_csv(Genomic_mutation_file,sep=',',header=0,index_col=
 mutation_feature = mutation_feature.loc[list(gexpr_feature.index)]
 methylation_feature = pd.read_csv(Methylation_file,sep=',',header=0,index_col=[0])
 assert methylation_feature.shape[0]==gexpr_feature.shape[0]==mutation_feature.shape[0]
-#--------drug_feature_input
+
+#--------drug feature input
 drug='../data/CCLE/CCLE_smiles.csv'
 drug=pd.read_csv(drug, sep=',',header=0)
 drug_feature = {}
@@ -36,7 +37,8 @@ for tup in zip(drug['pubchem'], drug['isosmiles']):
     mol=Chem.MolFromSmiles(tup[1])
     X = featurizer.featurize(mol)
     drug_feature[str(tup[0])]=[X[0].get_atom_features(),X[0].get_adjacency_list(),1]
-#--------response_input
+    
+#--------responses input
 response='../data/CCLE/CCLE_response.csv'
 datar=pd.read_csv(response, sep=',',header=0)
 data_idx = []
@@ -44,22 +46,22 @@ thred=0.8
 for tup in zip(datar['DepMap_ID'],datar['pubchem'],datar['Z_SCORE']):
     t=1 if tup[2]>thred else -1
     data_idx.append((tup[0],str(tup[1]),t))
+#---duplicate value filtering
+data_sort=sorted(data_idx, key=(lambda x: [x[0], x[1], x[2]]), reverse=True)
+data_tmp=[];data_new=[]
+data_idx1 = [[i[0],i[1]] for i in data_sort]
+for i,k in zip(data_idx1,data_sort):
+    if i not in data_tmp:
+        data_tmp.append(i)
+        data_new.append(k)
+nb_celllines = len(set([item[0] for item in data_new]))
+nb_drugs = len(set([item[1] for item in data_new]))
+print('All %d pairs across %d cell lines and %d drugs.'%(len(data_new),nb_celllines,nb_drugs))
 
-data_s=sorted(data_idx, key=(lambda x: [x[0], x[1], x[2]]), reverse=True)
-data_back=[];data_move=[]
-data_idx1 = [[i[0],i[1]] for i in data_s]
-for i,k in zip(data_idx1,data_s):
-    if i not in data_back:
-        data_back.append(i)
-        data_move.append(k)
-nb_celllines = len(set([item[0] for item in data_move]))
-nb_drugs = len(set([item[1] for item in data_move]))
-print('%d instances across %d cell lines and %d drugs were generated.'%(len(data_move),nb_celllines,nb_drugs))
-
-drug_set,cellline_set,train_edge,label_pos,train_mask,test_mask,atom_shape = process(drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_move, nb_celllines, nb_drugs)
+drug_set,cellline_set,train_edge,label_pos,train_mask,test_mask,atom_shape = process(drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_new, nb_celllines, nb_drugs)
 
 model = GraphCDR(hidden_channels=args.hidden_channels, encoder=Encoder(args.output_channels, args.hidden_channels), summary=Summary(args.output_channels, args.hidden_channels),
-                 feat=NodeAttribute(atom_shape,gexpr_feature.shape[-1],methylation_feature.shape[-1],args.output_channels),index=nb_celllines)
+                 feat=NodeRepresentation(atom_shape,gexpr_feature.shape[-1],methylation_feature.shape[-1],args.output_channels),index=nb_celllines)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 myloss = nn.BCELoss()
 
