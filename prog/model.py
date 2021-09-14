@@ -1,8 +1,11 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, global_max_pool as gmp, SGConv, global_mean_pool
+from torch_geometric.nn import global_max_pool as gmp, global_mean_pool
+from base_model.GNN_encoder import GCNConv
+from base_model.GNN_drug import SGConv
 from torch.nn import Parameter
 from my_utiils import *
+
 EPS = 1e-15
 class NodeRepresentation(nn.Module):
     def __init__(self, gcn_layer, dim_gexp, dim_methy, output, units_list=[256, 256, 256], use_relu=True, use_bn=True,
