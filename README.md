@@ -12,6 +12,7 @@ Source code and data for "GraphCDR: Contrastive graph neural network for cancer 
 * RDkit >= 2020.09
 
 # Usage
+* please unzip the file: data/Drug/drug_graph_feat.zip first.
 * python graphCDR.py \<parameters\>
 * python graphCDR-ccle.py \<parameters\>
   
