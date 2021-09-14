@@ -20,14 +20,14 @@ class NodeRepresentation(nn.Module):
         self.use_mutation = use_mutation
         self.use_gexpr = use_gexpr
         self.use_methylation = use_methylation
-        self.conv1 = SGConv(gcn_layer, units_list[0], add_self_loops=False)
+        self.conv1 = SGConv(gcn_layer, units_list[0])
         self.batch_conv1 = nn.BatchNorm1d(units_list[0])
         self.graph_conv = []
         self.graph_bn = []
         for i in range(len(units_list) - 1):
-            self.graph_conv.append(SGConv(units_list[i], units_list[i + 1], add_self_loops=False))
+            self.graph_conv.append(SGConv(units_list[i], units_list[i + 1]))
             self.graph_bn.append(nn.BatchNorm1d((units_list[i + 1])))
-        self.conv_end = SGConv(units_list[-1], output, add_self_loops=False)
+        self.conv_end = SGConv(units_list[-1], output)
         self.batch_end = nn.BatchNorm1d(output)
         # --------cell line layers (three omics)
         # -------gexp_layer
