@@ -1,8 +1,8 @@
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import global_max_pool as gmp, global_mean_pool
-from base_model.GNN_encoder import GCNConv
-from base_model.GNN_drug import SGConv
+from base_model.GCNConv import GCNConv
+from base_model.SGConv import SGConv
 from torch.nn import Parameter
 from my_utiils import *
 
@@ -141,9 +141,9 @@ class Summary(nn.Module):
         return x
 
 
-class DeepGraphInfomax(nn.Module):
+class GraphCDR(nn.Module):
     def __init__(self, hidden_channels, encoder, summary, feat, index):
-        super(DeepGraphInfomax, self).__init__()
+        super(GraphCDR, self).__init__()
         self.hidden_channels = hidden_channels
         self.encoder = encoder
         self.summary = summary
