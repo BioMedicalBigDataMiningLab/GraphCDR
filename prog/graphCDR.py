@@ -24,10 +24,10 @@ Cancer_response_exp_file='../data/Celline/GDSC_IC50.csv'
 Gene_expression_file='../data/Celline/genomic_expression_561celllines_697genes_demap_features.csv'
 Methylation_file='../data/Celline/genomic_methylation_561celllines_808genes_demap_features.csv'
 #-------bio-feature extraction
-drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_move, nb_celllines, nb_drugs=dataload(Drug_info_file, IC50_threds_file, Drug_feature_file, Cell_line_info_file, Genomic_mutation_file,
+drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_new, nb_celllines, nb_drugs=dataload(Drug_info_file, IC50_threds_file, Drug_feature_file, Cell_line_info_file, Genomic_mutation_file,
              Cancer_response_exp_file, Gene_expression_file, Methylation_file)
 #-------split train and test sets 
-drug_set,cellline_set,train_edge,label_pos,train_mask,test_mask,atom_shape = process(drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_move, nb_celllines, nb_drugs)
+drug_set,cellline_set,train_edge,label_pos,train_mask,test_mask,atom_shape = process(drug_feature, mutation_feature, gexpr_feature, methylation_feature, data_new, nb_celllines, nb_drugs)
 
 model = GraphCDR(hidden_channels=args.hidden_channels, encoder=Encoder(args.output_channels, args.hidden_channels), summary=Summary(args.output_channels, args.hidden_channels),
                  feat=NodeRepresentation(atom_shape,gexpr_feature.shape[-1],methylation_feature.shape[-1],args.output_channels),index=nb_celllines)
