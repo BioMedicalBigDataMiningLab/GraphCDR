@@ -46,7 +46,7 @@ thred=0.8
 for tup in zip(datar['DepMap_ID'],datar['pubchem'],datar['Z_SCORE']):
     t=1 if tup[2]>thred else -1
     data_idx.append((tup[0],str(tup[1]),t))
-#---duplicate value filtering
+#----eliminate ambiguity responses
 data_sort=sorted(data_idx, key=(lambda x: [x[0], x[1], x[2]]), reverse=True)
 data_tmp=[];data_new=[]
 data_idx1 = [[i[0],i[1]] for i in data_sort]
