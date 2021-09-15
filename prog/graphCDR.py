@@ -9,7 +9,7 @@ from data_load import dataload
 parser = argparse.ArgumentParser(description='Drug_response_pre')
 parser.add_argument('--alph', dest='alph', type=float, default=0.30, help='')
 parser.add_argument('--beta', dest='beta', type=float, default=0.30, help='')
-parser.add_argument('--epoch', dest='epoch', type=int, default=400, help='')
+parser.add_argument('--epoch', dest='epoch', type=int, default=350, help='')
 parser.add_argument('--hidden_channels', dest='hidden_channels', type=int, default=256, help='')
 parser.add_argument('--output_channels', dest='output_channels', type=int, default=100, help='')
 args = parser.parse_args()
