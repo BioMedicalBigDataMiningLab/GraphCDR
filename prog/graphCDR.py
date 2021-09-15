@@ -57,7 +57,7 @@ def test():
             loss_temp = myloss(pre_adj[test_mask],label_pos[test_mask])
         yp=pre_adj[test_mask].detach().numpy()
         ytest=label_pos[test_mask].detach().numpy()
-        AUC, AUPR, F1, ACC, Precision, Recall=metrics_graph(ytest,yp)
+        AUC, AUPR, F1, ACC =metrics_graph(ytest,yp)
         print('test loss: ', str(round(loss_temp.item(), 4)))
         print('test auc: ' + str(round(AUC, 4)) + '  test aupr: ' + str(round(AUPR, 4)) +
               '  test f1: ' + str(round(F1, 4)) + '  test acc: ' + str(round(ACC, 4)))
