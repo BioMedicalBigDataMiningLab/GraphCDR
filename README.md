@@ -16,5 +16,5 @@ Source code and data for "GraphCDR: A graph neural network method with contrasti
 * python graphCDR.py \<parameters\>
 * python graphCDR-ccle.py \<parameters\>
   
-# Case study (predicted missing response pairs)
+# Case study
 As GDSC database only measured IC50 of part cell line and drug pairs. We applied GraphCDR to predicted the missing types of responses. The predicted results can be find at data/Case study (missing pairs).xlsx
